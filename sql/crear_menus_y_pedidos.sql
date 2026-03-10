@@ -104,33 +104,7 @@ CREATE TABLE `lineas_pedido` (
 -- PARTE C: DATOS DE PRUEBA
 -- ============================================================
 
--- Pedidos de ejemplo
-INSERT INTO `pedidos` (`fecha`, `idUsuario`, `estado`, `total`, `observaciones`) VALUES
-('2025-01-15', 1, 'Completado', 150.00, 'Pedido urgente - entrega prioritaria'),
-('2025-01-16', 2, 'Pendiente', 75.51, 'Cliente solicita confirmación antes de envío'),
-('2025-01-20', 1, 'Procesando', 320.40, NULL),
-('2025-02-01', 3, 'Pendiente', 95.70, 'Verificar disponibilidad de stock'),
-('2025-02-05', 2, 'Completado', 214.30, NULL);
-
--- Líneas de detalle de los pedidos
-INSERT INTO `lineas_pedido` (`idPedido`, `idProducto`, `cantidad`, `precioUnitario`, `subtotal`) VALUES
--- Líneas del Pedido 1
-(1, 1, 2, 50.00, 100.00),
-(1, 2, 1, 50.00, 50.00),
-
--- Líneas del Pedido 2
-(2, 3, 3, 25.17, 75.51),
-
--- Líneas del Pedido 3
-(3, 1, 1, 95.70, 95.70),
-(3, 2, 1, 214.30, 214.30),
-(3, 5, 1, 10.40, 10.40),
-
--- Líneas del Pedido 4
-(4, 1, 1, 95.70, 95.70),
-
--- Líneas del Pedido 5
-(5, 2, 1, 214.30, 214.30);
+-- (Las inserciones de pedidos de prueba se han movido al script de productos de informática)
 
 
 -- ============================================================

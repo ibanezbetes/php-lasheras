@@ -1,12 +1,12 @@
-URL: https://ec2-52-90-162-80.compute-1.amazonaws.com/
+URL: https://ec2-52-90-162-80.compute-1.amazonaws.com/php-lasheras/
 Usuario: admin
 Contraseña: 123
 
 Instrucciones de Instalación:
 1. Crear la base de datos `db_di25`.
-2. Importar `modelos/usuarios y productos 2025 09 29.sql`.
-3. Importar `sql/crear_pedidos.sql` para crear las tablas de pedidos y líneas.
-4. Importar `sql/crear_menus_y_pedidos.sql` para crear la tabla de menús dinámicos (o solo la PART A de menus).
+2. Importar `modelos/usuarios y productos 2025 09 29.sql` (Base de usuarios y productos original).
+3. Importar `sql/crear_menus_y_pedidos.sql` (Crea la tabla de menús dinámicos, la de pedidos y líneas de detalle).
+4. Importar `sql/reemplazar_productos_informatica.sql` (Actualiza la base a componentes de informática y crea los últimos pedidos).
 5. Configurar `modelos/DAO.php` con las credenciales de la BD (HOST, USER, PASS, DB).
 6. La aplicación requiere inicio de sesión (usuario: admin, contraseña: 123).
 7. Es compatible con PWA y se puede instalar desde el navegador.
