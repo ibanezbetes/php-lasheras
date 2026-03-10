@@ -1,0 +1,14 @@
+-- ============================================================
+-- modelos/pedidos.sql (ARCHIVO OBSOLETO)
+-- Base de datos: db_di25
+--
+-- NOTA: Este archivo se mantiene solo como referencia histórica.
+-- Las definiciones actuales y correctas de las tablas de pedidos
+-- están en los siguientes archivos del directorio sql/:
+--
+--   sql/crear_pedidos.sql          - Crear tablas desde cero
+--   sql/crear_menus_y_pedidos.sql  - Crear tablas + menú dinámico
+--   sql/fix_pedidos.sql            - Reparar tablas existentes
+-- ============================================================
+
+-- Por favor, usa los archivos del directorio sql/ en su lugar.

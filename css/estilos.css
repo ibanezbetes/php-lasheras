@@ -1,0 +1,372 @@
+/**
+ * css/estilos.css - Hoja de estilos personalizada (Tema Oscuro)
+ * 
+ * Define el tema visual oscuro de toda la aplicación, sobrescribiendo
+ * variables y estilos de Bootstrap 5 para conseguir un aspecto moderno
+ * y coherente.
+ * 
+ * Estructura del archivo:
+ * 1. Variables CSS (tokens del tema)
+ * 2. Estilos generales (body, contenedores)
+ * 3. Componentes Bootstrap sobrescritos (cards, tablas, formularios, botones)
+ * 4. Navegación (navbar, nav-links, dropdowns)
+ * 5. Página de login
+ * 6. Paginación
+ */
+
+/* ================================================================
+   1. VARIABLES CSS - Tokens del tema oscuro
+   Cambiando estos valores se modifica el tema de toda la aplicación
+   ================================================================ */
+:root {
+  --bs-primary: #0d6efd; /* Azul principal (Bootstrap default) */
+  --bs-secondary: #6c757d; /* Gris secundario */
+  --bs-success: #198754; /* Verde éxito */
+  --bs-info: #0dcaf0; /* Azul informativo */
+  --bs-danger: #dc3545; /* Rojo peligro/error */
+  --bs-light: #dee2e6; /* Texto claro */
+  --bs-dark: #212529; /* Fondo oscuro principal */
+  --bs-body-bg: #212529; /* Fondo del body */
+  --bs-body-color: #dee2e6; /* Color de texto principal */
+  --bs-border-color: #495057; /* Color de bordes */
+  --surface-color: #343a40; /* Fondo de tarjetas, modals y componentes */
+  --bs-border-radius: 0.375rem;
+  --bs-border-radius-sm: 0.25rem;
+}
+
+/* ================================================================
+   2. ESTILOS GENERALES
+   ================================================================ */
+
+/* Fondo y color de texto del body */
+body {
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+/* Padding horizontal de los contenedores */
+.container,
+.container-fluid {
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+/* Bordes redondeados coherentes en todos los componentes */
+.card,
+.table,
+.alert,
+.form-control,
+.btn,
+.dropdown-menu,
+.navbar {
+  border-radius: var(--bs-border-radius) !important;
+}
+
+/* ================================================================
+   3. COMPONENTES BOOTSTRAP SOBRESCRITOS
+   ================================================================ */
+
+/* --- Cards, Navbar y Dropdowns: fondo oscuro con sombra --- */
+.card,
+.navbar,
+.dropdown-menu {
+  background-color: var(--surface-color);
+  border-color: var(--bs-border-color);
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.15);
+}
+
+/* --- Inputs de formulario --- */
+.form-control {
+  background-color: var(--surface-color);
+  color: #e9ecef !important;
+  border-color: var(--bs-border-color);
+}
+
+.form-control:focus {
+  background-color: var(--surface-color);
+  color: #fff !important;
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.form-control::placeholder {
+  color: #adb5bd !important;
+}
+
+/* --- Labels de formulario --- */
+.form-label {
+  color: #e9ecef !important;
+  font-weight: 500;
+}
+
+/* --- Tablas con tema oscuro --- */
+.table {
+  background-color: var(--surface-color);
+  color: #fff !important;
+}
+
+/* Cabecera de tabla: fondo más oscuro */
+.table thead th {
+  background-color: #495057;
+  color: #fff !important;
+  border-color: var(--bs-border-color);
+  font-weight: 600;
+}
+
+/* Celdas de tabla */
+.table tbody td {
+  color: #fff !important;
+  border-color: var(--bs-border-color);
+}
+
+/* Filas alternas (zebra striping) */
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+  --bs-table-accent-bg: rgba(255, 255, 255, 0.05);
+  color: #fff !important;
+}
+
+/* Efecto hover en filas */
+.table-hover > tbody > tr:hover > * {
+  --bs-table-accent-bg: rgba(255, 255, 255, 0.1);
+  color: #fff !important;
+}
+
+/* Botones dentro de tablas */
+.table .btn {
+  color: #fff !important;
+}
+
+.table .btn-primary {
+  background-color: var(--bs-primary) !important;
+}
+
+.table .btn-danger {
+  background-color: var(--bs-danger) !important;
+}
+
+/* ================================================================
+   4. NAVEGACIÓN
+   ================================================================ */
+
+/* --- Navbar --- */
+.navbar {
+  background-color: var(--surface-color) !important;
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.navbar-brand {
+  color: #fff !important;
+  font-weight: 600;
+}
+
+/* --- Nav links (opciones del menú) --- */
+.nav-link {
+  color: #e9ecef !important;
+  font-weight: 500;
+}
+
+.nav-link:hover {
+  color: #fff !important;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: var(--bs-border-radius-sm);
+}
+
+.nav-link.active {
+  color: #fff !important;
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* --- Dropdown items --- */
+.dropdown-item {
+  color: var(--bs-light) !important;
+}
+
+.dropdown-item:hover {
+  color: #fff !important;
+  background-color: var(--bs-primary);
+}
+
+/* --- Título de la cabecera --- */
+.h4,
+h1.h4 {
+  color: #fff !important;
+  font-weight: 500;
+}
+
+/* --- Texto muted (información secundaria) --- */
+.text-muted {
+  color: #adb5bd !important;
+}
+
+/* --- Botones --- */
+.btn {
+  font-weight: 500;
+}
+
+.btn-primary {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+  color: #fff;
+}
+
+.btn-info {
+  background-color: var(--bs-info);
+  border-color: var(--bs-info);
+  color: #000;
+}
+
+.btn-secondary {
+  background-color: var(--bs-secondary);
+  border-color: var(--bs-secondary);
+  color: #fff;
+}
+
+.btn-success {
+  background-color: var(--bs-success);
+  border-color: var(--bs-success);
+  color: #fff;
+}
+
+/* --- Selects y textareas --- */
+.form-select,
+select.form-control {
+  background-color: var(--surface-color);
+  color: #e9ecef !important;
+  border-color: var(--bs-border-color);
+}
+
+textarea.form-control {
+  background-color: var(--surface-color);
+  color: #e9ecef !important;
+  border-color: var(--bs-border-color);
+}
+
+/* --- Cabecera de la página (franja con logo) --- */
+.py-2 {
+  background-color: var(--bs-dark);
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+/* Texto del nombre de usuario en la cabecera */
+.d-flex span {
+  color: #e9ecef !important;
+  font-weight: 500;
+}
+
+/* --- Iconos de login/logout: invertir colores para tema oscuro --- */
+img[src*="login.png"],
+img[src*="logout.png"] {
+  filter: invert(1) brightness(1);
+}
+
+img[src*="logo.png"] {
+  filter: none;
+}
+
+/* --- Bloques de código (pre) --- */
+pre {
+  background-color: var(--surface-color);
+  color: var(--bs-body-color);
+  padding: 1rem;
+  border-radius: var(--bs-border-radius);
+  border: 1px solid var(--bs-border-color);
+}
+
+/* ================================================================
+   5. PÁGINA DE LOGIN
+   ================================================================ */
+
+/* Hacer que el login ocupe toda la altura de la pantalla */
+html.login-page,
+html.login-page body {
+  height: 100%;
+}
+
+/* Formulario de login centrado */
+.formulario {
+  max-width: 330px;
+  padding: 2rem;
+  margin: auto !important;
+  width: 100% !important;
+  background-color: var(--surface-color);
+  border-radius: var(--bs-border-radius);
+  border: 1px solid var(--bs-border-color);
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.15);
+}
+
+/* Mensaje de error en login */
+.msj {
+  color: var(--bs-danger) !important;
+  font-weight: 500;
+}
+
+/* Título "Identifícate..." */
+h1.h3 {
+  color: var(--bs-light) !important;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+/* Labels de los inputs flotantes del login */
+.form-floating > label {
+  color: #6c757d !important;
+}
+
+.form-floating > .form-control {
+  background-color: var(--surface-color);
+  border-color: var(--bs-border-color);
+  color: #fff !important;
+}
+
+.form-floating > .form-control:focus {
+  background-color: var(--surface-color);
+  border-color: var(--bs-primary);
+  color: #fff !important;
+}
+
+/* Label flotante cuando el input tiene foco o contenido */
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+  color: var(--bs-primary) !important;
+  opacity: 0.65;
+}
+
+/* ================================================================
+   6. PAGINACIÓN
+   ================================================================ */
+
+/* Botones de paginación con tema oscuro */
+.page-link {
+  background-color: var(--surface-color);
+  border-color: var(--bs-border-color);
+  color: var(--bs-body-color);
+}
+
+.page-link:hover {
+  background-color: var(--bs-border-color);
+  color: #fff;
+  border-color: var(--bs-border-color);
+}
+
+/* Página activa: azul */
+.page-item.active .page-link {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+  color: #fff;
+}
+
+/* Página deshabilitada: más oscura */
+.page-item.disabled .page-link {
+  background-color: #1a1d20;
+  border-color: var(--bs-border-color);
+  color: #6c757d;
+}
+
+/* Input numérico de página dentro del paginador */
+.page-link input {
+  background-color: #212529;
+  color: #fff;
+  border: 1px solid var(--bs-border-color);
+}

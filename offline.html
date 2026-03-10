@@ -1,0 +1,82 @@
+<!-- ============================================================
+     offline.html - Página de fallback sin conexión (PWA)
+     
+     Esta página se muestra automáticamente por el Service Worker
+     (pwa_sw.js) cuando el usuario intenta navegar sin conexión a
+     internet y la página solicitada no está en caché.
+     
+     Está cacheada localmente durante la instalación del Service Worker
+     para garantizar que siempre esté disponible.
+     ============================================================ -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sin Conexión - App D.I. 2025</title>
+    <style>
+        /* Estilos autónomos (no usa Bootstrap porque podría no estar cacheado) */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 400px;
+        }
+        /* Icono con animación de pulso */
+        .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        p {
+            font-size: 1rem;
+            color: #aaa;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        /* Botón de reintentar (mismo azul que Bootstrap primary) */
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #0d6efd;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #0b5ed7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">📡</div>
+        <h1>Sin conexión</h1>
+        <p>No se ha podido conectar con el servidor. Comprueba tu conexión a internet e inténtalo de nuevo.</p>
+        <!-- Recargar la página para reintentar la conexión -->
+        <button class="btn" onclick="location.reload();">Reintentar</button>
+    </div>
+</body>
+</html>
