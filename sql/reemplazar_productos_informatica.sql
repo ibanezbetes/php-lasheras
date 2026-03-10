@@ -17,7 +17,6 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 -- 2. Vaciar las tablas dependientes y la de productos
 DELETE FROM `lineas_pedido`;
-DELETE FROM `pedidos_detalles`;
 DELETE FROM `pedidos`;
 DELETE FROM `productos`;
 
