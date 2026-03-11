@@ -22,8 +22,8 @@
 /** @type {Array} Líneas de detalle del pedido en edición/creación */
 let lineasPedido = [];
 
-/** @type {Array} Lista de usuarios activos (precargada del servidor) */
-let listaUsuarios = [];
+/** @type {Array} Lista de usuarios activos (precargada del servidor) (REMOVED para DUAL: autocompletable) */
+// let listaUsuarios = [];
 
 /** @type {Array} Lista de productos activos (precargada del servidor) */
 let listaProductos = [];
@@ -42,14 +42,14 @@ let listaProductos = [];
 function cargarDatosAuxiliares() {
     const promesas = [];
 
-    // Cargar usuarios solo si no están ya cargados
-    if (listaUsuarios.length === 0) {
-        promesas.push(
-            fetch('CFrontal.php?controlador=Pedidos&metodo=getUsuariosJSON')
-                .then(r => r.json())
-                .then(data => { listaUsuarios = data; })
-        );
-    }
+    // Cargar usuarios solo si no están ya cargados - REMOVIDO PARA DUAL (autocompletado desde DB)
+    // if (listaUsuarios.length === 0) {
+    //     promesas.push(
+    //         fetch('CFrontal.php?controlador=Pedidos&metodo=getUsuariosJSON')
+    //             .then(r => r.json())
+    //             .then(data => { listaUsuarios = data; })
+    //     );
+    // }
 
     // Cargar productos solo si no están ya cargados
     if (listaProductos.length === 0) {
@@ -125,12 +125,8 @@ function renderFormularioPedido(pedido = null) {
     const esEdicion = pedido !== null;
     const titulo = esEdicion ? 'Editar Pedido #' + pedido.idPedido : 'Nuevo Pedido';
 
-    // Generar opciones del select de usuarios
-    let optsUsuarios = '<option value="">Seleccionar Usuario...</option>';
-    listaUsuarios.forEach(u => {
-        const selected = (esEdicion && pedido.idUsuario == u.idUsuario) ? 'selected' : '';
-        optsUsuarios += `<option value="${u.idUsuario}" ${selected}>${u.nombre} ${u.apellido1}</option>`;
-    });
+    // El select de usuarios es reemplazado por un autocompletable
+    const usuarioNombreInicial = esEdicion ? `${pedido.u_nombre} ${pedido.u_apellido1}` : '';
 
     // Generar la tabla de líneas de detalle existentes
     let lineasHTML = '';
@@ -164,9 +160,11 @@ function renderFormularioPedido(pedido = null) {
                 
                 <!-- Cabecera del pedido: usuario y fecha -->
                 <div class="row mb-3">
-                    <div class="col-md-6">
+                    <div class="col-md-6 position-relative">
                         <label class="form-label text-white">Usuario *</label>
-                        <select class="form-control" id="pedidoUsuario" required>${optsUsuarios}</select>
+                        <input type="text" class="form-control" id="pedidoUsuarioNombre" placeholder="Buscar usuario..." autocomplete="off" value="${usuarioNombreInicial}" required>
+                        <input type="hidden" id="pedidoUsuario" value="${esEdicion ? pedido.idUsuario : ''}">
+                        <div id="sugerenciasUsuarios" class="list-group position-absolute w-100" style="z-index: 1051; max-height: 200px; overflow-y: auto; display: none;"></div>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label text-white">Fecha *</label>
@@ -232,6 +230,66 @@ function renderFormularioPedido(pedido = null) {
 
     document.getElementById("capaPedidoFormulario").innerHTML = formulario;
     document.getElementById("capaPedidoFormulario").style.display = "block";
+    
+    // Inicializar autocompletado de usuarios
+    inicializarAutocompleteUsuario();
+}
+
+/**
+ * Inicializar el comportamiento de autocompletado para usuarios
+ */
+function inicializarAutocompleteUsuario() {
+    const inputNombre = document.getElementById('pedidoUsuarioNombre');
+    const inputOculto = document.getElementById('pedidoUsuario');
+    const capaSugerencias = document.getElementById('sugerenciasUsuarios');
+    
+    if (!inputNombre) return;
+
+    let timeoutSugerencias;
+    
+    inputNombre.addEventListener('input', function() {
+        const filtro = this.value.trim();
+        inputOculto.value = ""; // Si cambia el texto, invalida la selección
+        
+        clearTimeout(timeoutSugerencias);
+        
+        if (filtro.length < 2) {
+            capaSugerencias.style.display = 'none';
+            return;
+        }
+        
+        timeoutSugerencias = setTimeout(() => {
+            fetch(`CFrontal.php?controlador=Pedidos&metodo=buscarUsuariosJSON&filtro=${encodeURIComponent(filtro)}`)
+            .then(r => r.json())
+            .then(usuarios => {
+                capaSugerencias.innerHTML = '';
+                if (usuarios.length > 0) {
+                    usuarios.forEach(u => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'list-group-item list-group-item-action bg-dark text-white border-secondary text-start';
+                        btn.textContent = `${u.nombre} ${u.apellido1}`;
+                        btn.onclick = () => {
+                            inputNombre.value = `${u.nombre} ${u.apellido1}`;
+                            inputOculto.value = u.idUsuario;
+                            capaSugerencias.style.display = 'none';
+                        };
+                        capaSugerencias.appendChild(btn);
+                    });
+                    capaSugerencias.style.display = 'block';
+                } else {
+                    capaSugerencias.innerHTML = '<div class="list-group-item bg-dark text-muted border-secondary text-start">No hay coincidencias</div>';
+                    capaSugerencias.style.display = 'block';
+                }
+            });
+        }, 300);
+    });
+    
+    document.addEventListener('click', function(e) {
+        if (e.target !== inputNombre && e.target.parentElement !== capaSugerencias) {
+            capaSugerencias.style.display = 'none';
+        }
+    });
 }
 
 // =====================================================================
@@ -266,10 +324,12 @@ function addLinea() {
     // Refrescar el formulario para que se vea la nueva línea en la tabla
     const pedidoActual = document.getElementById('idPedidoEdit');
     if (pedidoActual) {
-        // Si estamos editando, re-renderizar con los datos del pedido
+        // Si estamos editando, re-renderizar con los datos del pedido y el nombre guardado en el input
         renderFormularioPedido({
             idPedido: pedidoActual.value,
             idUsuario: document.getElementById('pedidoUsuario').value,
+            u_nombre: document.getElementById('pedidoUsuarioNombre').value.split(' ')[0] || '',
+            u_apellido1: document.getElementById('pedidoUsuarioNombre').value.split(' ').slice(1).join(' ') || '',
             fecha: document.getElementById('pedidoFecha').value,
             estado: document.getElementById('pedidoEstado').value
         });
@@ -293,6 +353,8 @@ function removeLinea(index) {
         renderFormularioPedido({
             idPedido: pedidoActual.value,
             idUsuario: document.getElementById('pedidoUsuario').value,
+            u_nombre: document.getElementById('pedidoUsuarioNombre').value.split(' ')[0] || '',
+            u_apellido1: document.getElementById('pedidoUsuarioNombre').value.split(' ').slice(1).join(' ') || '',
             fecha: document.getElementById('pedidoFecha').value,
             estado: document.getElementById('pedidoEstado').value
         });
@@ -385,6 +447,104 @@ function editarPedido(idPedido) {
             }
         });
     });
+}
+
+/**
+ * Cargar datos de un pedido existente y mostrar popup de SOLO LECTURA
+ * 
+ * @param {number} idPedido - ID del pedido a visualizar
+ */
+function verDetallesPedido(idPedido) {
+    fetch(`CFrontal.php?controlador=Pedidos&metodo=obtenerPedido&idPedido=${idPedido}`)
+    .then(r => r.json())
+    .then(pedido => {
+        if (pedido.error) {
+            alert(pedido.error);
+        } else {
+            renderModalDetallesPedido(pedido);
+        }
+    });
+}
+
+/**
+ * Renderizar un popup de solo lectura para el pedido
+ */
+function renderModalDetallesPedido(pedido) {
+    let lineasHTML = '';
+    let total = 0;
+    
+    pedido.detalles.forEach(linea => {
+        const subtotal = linea.cantidad * linea.precioUnitario;
+        total += subtotal;
+        lineasHTML += `
+            <tr>
+                <td>${linea.producto || 'Producto #' + linea.idProducto}</td>
+                <td>${linea.cantidad}</td>
+                <td>${parseFloat(linea.precioUnitario).toFixed(2)} €</td>
+                <td>${subtotal.toFixed(2)} €</td>
+            </tr>
+        `;
+    });
+
+    const estadoTexto = pedido.estado === 'C' ? 'Completado' : 'Pendiente';
+    const badgeEstado = pedido.estado === 'C' ? '<span class="badge bg-success">Completado</span>' : '<span class="badge bg-warning text-dark">Pendiente</span>';
+
+    const formulario = `
+        <!-- Overlay oscuro de fondo -->
+        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1040;" onclick="cancelarFormularioPedido();"></div>
+        
+        <!-- Modal del pedido -->
+        <div class="p-4 rounded shadow" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60%; min-width: 500px; max-height: 90vh; overflow-y: auto; z-index: 1050; background-color: var(--surface-color); color: var(--bs-body-color); border: 1px solid var(--bs-border-color);">
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3">
+                <h4 class="m-0" style="color: var(--bs-light) !important;">
+                    🏷️ Detalles del Pedido #${pedido.idPedido}
+                </h4>
+                <button type="button" class="btn-close btn-close-white" onclick="cancelarFormularioPedido();"></button>
+            </div>
+            
+            <div class="row mb-4 bg-dark p-3 rounded border border-secondary">
+                <div class="col-md-6">
+                    <p class="text-white mb-2"><strong class="text-info">👤 Cliente:</strong><br> ${pedido.u_nombre} ${pedido.u_apellido1}</p>
+                </div>
+                <div class="col-md-3">
+                    <p class="text-white mb-2"><strong class="text-info">📅 Fecha:</strong><br> ${pedido.fecha}</p>
+                </div>
+                <div class="col-md-3">
+                    <p class="text-white mb-2"><strong class="text-info">📋 Estado:</strong><br> ${badgeEstado}</p>
+                </div>
+            </div>
+
+            <!-- Tabla con las líneas de detalle actuales -->
+            <h5 class="text-white mb-3">📄 Productos Incluidos</h5>
+            <div class="table-responsive mb-3 border border-secondary rounded overflow-hidden">
+                <table class="table table-sm table-dark table-striped text-white m-0">
+                    <thead><tr>
+                        <th class="ps-3 py-2">Producto</th><th class="py-2">Cantidad</th><th class="py-2">Precio U.</th><th class="text-end pe-3 py-2">Subtotal</th>
+                    </tr></thead>
+                    <tbody>${lineasHTML}</tbody>
+                    <tfoot class="border-top border-secondary bg-dark text-white">
+                        <tr>
+                            <td colspan="3" class="text-end py-3"><strong>Total del Pedido:</strong></td>
+                            <td class="text-end pe-3 py-3"><strong class="text-success fs-5">${total.toFixed(2)} €</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4 pt-3 border-top border-secondary">
+                <button type="button" class="btn btn-primary" onclick="editarPedido(${pedido.idPedido});">
+                    ✏️ Editar Pedido
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="cancelarFormularioPedido();">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.getElementById("capaPedidoFormulario").innerHTML = formulario;
+    document.getElementById("capaPedidoFormulario").style.display = "block";
 }
 
 /**

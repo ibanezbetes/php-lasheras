@@ -115,7 +115,10 @@ class MPedidos {
      */
     public function obtenerPedidoPorId($idPedido) {
         $idPedido = (int)$idPedido;
-        $sql = "SELECT * FROM pedidos WHERE idPedido=$idPedido AND activo='S'";
+        $sql = "SELECT p.*, u.nombre as u_nombre, u.apellido1 as u_apellido1 
+                FROM pedidos p 
+                INNER JOIN usuarios u ON p.idUsuario = u.idUsuario 
+                WHERE p.idPedido=$idPedido AND p.activo='S'";
         $resultado = $this->dao->consultar($sql);
         return !empty($resultado) ? $resultado[0] : null;
     }
@@ -354,6 +357,22 @@ class MPedidos {
      */
     public function obtenerUsuarios() {
         $sql = "SELECT idUsuario, nombre, apellido1 FROM usuarios WHERE activo='S' ORDER BY nombre";
+        return $this->dao->consultar($sql);
+    }
+
+    /**
+     * Obtener usuarios filtrados por nombre/apellido (max 15) para autocompletar
+     * 
+     * @param string $filtro Texto a buscar
+     * @return array Lista de usuarios que coinciden
+     */
+    public function obtenerUsuariosFiltrados($filtro) {
+        $filtro = $this->dao->getConexion()->real_escape_string($filtro);
+        $sql = "SELECT idUsuario, nombre, apellido1 
+                FROM usuarios 
+                WHERE activo='S' 
+                AND (nombre LIKE '%$filtro%' OR apellido1 LIKE '%$filtro%') 
+                ORDER BY nombre LIMIT 15";
         return $this->dao->consultar($sql);
     }
 

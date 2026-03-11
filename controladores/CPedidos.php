@@ -83,17 +83,19 @@ class CPedidos extends Controlador {
                 // Traducir código de estado a texto legible
                 $estado = ($p['estado'] == 'P') ? 'Pendiente' : (($p['estado'] == 'C') ? 'Completado' : $p['estado']);
 
-                echo '<tr>
-                        <td>' . $p['idPedido'] . '</td>
-                        <td>' . $p['fecha'] . '</td>
-                        <td>' . $p['nombre'] . ' ' . $p['apellido1'] . '</td>
-                        <td>' . number_format($p['total'], 2) . ' €</td>
-                        <td>' . $estado . '</td>
+                echo '<tr class="align-middle" style="cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor=\'rgba(255,255,255,0.05)\'" onmouseout="this.style.backgroundColor=\'\'">
+                        <td onclick="verDetallesPedido(' . $p['idPedido'] . ');">' . $p['idPedido'] . '</td>
+                        <td onclick="verDetallesPedido(' . $p['idPedido'] . ');">' . $p['fecha'] . '</td>
+                        <td onclick="verDetallesPedido(' . $p['idPedido'] . ');">' . $p['nombre'] . ' ' . $p['apellido1'] . '</td>
+                        <td onclick="verDetallesPedido(' . $p['idPedido'] . ');">' . number_format($p['total'], 2) . ' €</td>
+                        <td onclick="verDetallesPedido(' . $p['idPedido'] . ');">' . $estado . '</td>
                         <td>
-                            <button class="btn btn-sm btn-primary me-1" 
-                                    onclick="editarPedido(' . $p['idPedido'] . ');">✏️</button>
-                            <button class="btn btn-sm btn-danger" 
-                                    onclick="eliminarPedido(' . $p['idPedido'] . ');">❌</button>
+                            <button type="button" class="btn btn-sm btn-info me-1 text-white" 
+                                    title="Ver detalles" onclick="verDetallesPedido(' . $p['idPedido'] . ');">👁️</button>
+                            <button type="button" class="btn btn-sm btn-primary me-1" 
+                                    title="Editar pedido" onclick="editarPedido(' . $p['idPedido'] . ');">✏️</button>
+                            <button type="button" class="btn btn-sm btn-danger" 
+                                    title="Eliminar pedido" onclick="eliminarPedido(' . $p['idPedido'] . ');">❌</button>
                         </td>
                       </tr>';
             }
@@ -268,6 +270,16 @@ class CPedidos extends Controlador {
      */
     public function getUsuariosJSON() {
         $usuarios = $this->modelo->obtenerUsuarios();
+        header('Content-Type: application/json');
+        echo json_encode($usuarios);
+    }
+
+    /**
+     * Buscar usuarios filtrados para autocompletar en formato JSON (max 15)
+     */
+    public function buscarUsuariosJSON($datos = array()) {
+        $filtro = isset($datos['filtro']) ? $datos['filtro'] : '';
+        $usuarios = $this->modelo->obtenerUsuariosFiltrados($filtro);
         header('Content-Type: application/json');
         echo json_encode($usuarios);
     }
