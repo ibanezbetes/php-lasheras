@@ -62,7 +62,7 @@ class CProductos extends Controlador {
         // ----- 2. Obtener solo los registros de la página actual -----
         $offset = ($pagina - 1) * $tamPag;
 
-        $sql = "SELECT idProducto, producto, descripcion, stock, precioVenta 
+        $sql = "SELECT idProducto, producto, descripcion, stock, precioVenta, idCategoria, precioCompra, stockMinimo 
                 FROM productos WHERE activo='S'";
         $sql .= $filtro;
         $sql .= " ORDER BY producto";
@@ -129,12 +129,16 @@ class CProductos extends Controlador {
         extract($datos);
 
         if (empty($producto) || !isset($precioVenta)) {
-            echo '<div class="alert alert-danger">Nombre y precio son obligatorios</div>';
+            echo '<div class="alert alert-danger">Nombre y precio de venta son obligatorios</div>';
             return;
         }
 
-        $sql = "INSERT INTO productos (producto, descripcion, stock, precioVenta, activo) 
-                VALUES ('$producto','$descripcion','$stock','$precioVenta','S')";
+        $idCategoria = isset($idCategoria) ? (int)$idCategoria : 1;
+        $precioCompra = isset($precioCompra) ? (float)$precioCompra : 0;
+        $stockMinimo = isset($stockMinimo) ? (int)$stockMinimo : 0;
+
+        $sql = "INSERT INTO productos (producto, descripcion, idCategoria, stock, precioCompra, precioVenta, stockMinimo, activo) 
+                VALUES ('$producto','$descripcion', $idCategoria, '$stock', $precioCompra, '$precioVenta', $stockMinimo, 'S')";
         $id = $this->dao->insertar($sql);
         echo $id > 0
             ? '<div class="alert alert-success">Producto creado exitosamente</div>'
@@ -154,8 +158,12 @@ class CProductos extends Controlador {
             return;
         }
 
+        $idCategoria = isset($idCategoria) ? (int)$idCategoria : 1;
+        $precioCompra = isset($precioCompra) ? (float)$precioCompra : 0;
+        $stockMinimo = isset($stockMinimo) ? (int)$stockMinimo : 0;
+
         $sql = "UPDATE productos SET producto='$producto', descripcion='$descripcion', 
-                stock='$stock', precioVenta='$precioVenta' 
+                idCategoria=$idCategoria, stock='$stock', precioCompra=$precioCompra, precioVenta='$precioVenta', stockMinimo=$stockMinimo 
                 WHERE idProducto=$idProducto";
         $res = $this->dao->actualizar($sql);
         echo $res >= 0

@@ -1,46 +1,21 @@
 <?php
 /**
  * MPedidos.php - Modelo del módulo de Pedidos (Maestro-Detalle)
- * 
- * Gestiona toda la lógica de acceso a datos para pedidos y sus líneas de detalle.
- * Implementa operaciones transaccionales para garantizar la integridad de datos
- * cuando se insertan/actualizan pedidos junto con sus líneas.
- * 
- * Tablas que utiliza:
- *   - pedidos:        Cabecera del pedido (fecha, usuario, total, estado)
- *   - lineas_pedido:  Líneas de detalle (producto, cantidad, precio, subtotal)
- *   - usuarios:       Para JOINs y select de usuarios
- *   - productos:      Para JOINs y select de productos
+ * Adaptado a la nueva estructura:
+ *   - pedidos: idPedido, idUsuario, fechaPedido, fechaAlmacen, fechaEnvio, fechaRecibido, fechaFinalizado, transporte, direccion
+ *   - pedidosdetalles: idDetalle, idPedido, idProducto, cantidad, precioVenta
  */
 require_once 'modelos/DAO.php';
 
 class MPedidos {
-    /** @var DAO Objeto de acceso a datos */
     private $dao;
 
-    /**
-     * Constructor - Inicializa la conexión a la base de datos
-     */
     public function __construct() {
         $this->dao = new DAO();
     }
 
-    // =====================================================================
-    // CONSULTAS DE LECTURA (SELECT)
-    // =====================================================================
-
-    /**
-     * Obtener pedidos paginados con filtros opcionales
-     * Hace JOIN con usuarios para mostrar el nombre del usuario en el listado.
-     * 
-     * @param array $filtros  Filtros: 'usuario' (nombre), 'fecha', 'estado'
-     * @param int   $pagina   Número de página actual (empezando en 1)
-     * @param int   $tamPag   Cantidad de registros por página
-     * @return array          Array de pedidos con datos del usuario
-     */
     public function obtenerPedidos($filtros, $pagina, $tamPag) {
-        // Construir la cláusula WHERE según los filtros recibidos
-        $where = "p.activo='S'";
+        $where = "1=1";
 
         if (!empty($filtros['usuario'])) {
             $usuario = $this->dao->getConexion()->real_escape_string($filtros['usuario']);
@@ -49,38 +24,27 @@ class MPedidos {
 
         if (!empty($filtros['fecha'])) {
             $fecha = $this->dao->getConexion()->real_escape_string($filtros['fecha']);
-            $where .= " AND p.fecha = '$fecha'";
+            $where .= " AND DATE(p.fechaPedido) = '$fecha'";
         }
 
-        if (!empty($filtros['estado'])) {
-            $estado = $this->dao->getConexion()->real_escape_string($filtros['estado']);
-            $where .= " AND p.estado = '$estado'";
-        }
-
-        // Calcular el desplazamiento (offset) para la paginación
         $offset = ($pagina - 1) * $tamPag;
 
-        // Consulta con JOIN a usuarios y paginación con LIMIT
-        $sql = "SELECT p.*, u.nombre, u.apellido1 
+        // Calcular el estado basado en fechaFinalizado (si no es nulo/0, es C Completado, si no P Pendiente)
+        // Calcular el total desde pedidosdetalles
+        $sql = "SELECT p.*, u.nombre, u.apellido1,
+                       (SELECT SUM(cantidad * precioVenta) FROM pedidosdetalles pd WHERE pd.idPedido = p.idPedido) as total,
+                       IF(p.fechaFinalizado AND p.fechaFinalizado != '0000-00-00 00:00:00', 'C', 'P') as estado
                 FROM pedidos p 
                 INNER JOIN usuarios u ON p.idUsuario = u.idUsuario 
                 WHERE $where 
-                ORDER BY p.fecha DESC, p.idPedido DESC 
+                ORDER BY p.fechaPedido DESC, p.idPedido DESC 
                 LIMIT $offset, $tamPag";
 
         return $this->dao->consultar($sql);
     }
 
-    /**
-     * Contar el total de pedidos que coinciden con los filtros
-     * Necesario para calcular el número de páginas en la paginación.
-     * 
-     * @param array $filtros  Mismos filtros que obtenerPedidos()
-     * @return int            Número total de pedidos que coinciden
-     */
     public function contarPedidos($filtros) {
-        // Construir WHERE (misma lógica que obtenerPedidos)
-        $where = "p.activo='S'";
+        $where = "1=1";
 
         if (!empty($filtros['usuario'])) {
             $usuario = $this->dao->getConexion()->real_escape_string($filtros['usuario']);
@@ -89,12 +53,7 @@ class MPedidos {
 
         if (!empty($filtros['fecha'])) {
             $fecha = $this->dao->getConexion()->real_escape_string($filtros['fecha']);
-            $where .= " AND p.fecha = '$fecha'";
-        }
-
-        if (!empty($filtros['estado'])) {
-            $estado = $this->dao->getConexion()->real_escape_string($filtros['estado']);
-            $where .= " AND p.estado = '$estado'";
+            $where .= " AND DATE(p.fechaPedido) = '$fecha'";
         }
 
         $sql = "SELECT COUNT(*) as total 
@@ -106,266 +65,132 @@ class MPedidos {
         return $resultado[0]['total'];
     }
 
-    /**
-     * Obtener un pedido concreto por su ID
-     * Solo devuelve pedidos activos (activo='S').
-     * 
-     * @param int $idPedido  ID del pedido a buscar
-     * @return array|null    Datos del pedido o null si no existe
-     */
     public function obtenerPedidoPorId($idPedido) {
         $idPedido = (int)$idPedido;
-        $sql = "SELECT p.*, u.nombre as u_nombre, u.apellido1 as u_apellido1 
+        $sql = "SELECT p.*, u.nombre as u_nombre, u.apellido1 as u_apellido1,
+                       IF(p.fechaFinalizado AND p.fechaFinalizado != '0000-00-00 00:00:00', 'C', 'P') as estado
                 FROM pedidos p 
                 INNER JOIN usuarios u ON p.idUsuario = u.idUsuario 
-                WHERE p.idPedido=$idPedido AND p.activo='S'";
+                WHERE p.idPedido=$idPedido";
         $resultado = $this->dao->consultar($sql);
         return !empty($resultado) ? $resultado[0] : null;
     }
 
-    /**
-     * Obtener todas las líneas de detalle de un pedido
-     * Incluye el nombre del producto mediante JOIN con la tabla productos.
-     * 
-     * @param int $idPedido  ID del pedido
-     * @return array         Array de líneas con datos del producto
-     */
     public function obtenerLineasPedido($idPedido) {
         $idPedido = (int)$idPedido;
-        $sql = "SELECT lp.*, p.producto 
-                FROM lineas_pedido lp
-                INNER JOIN productos p ON lp.idProducto = p.idProducto
-                WHERE lp.idPedido=$idPedido
-                ORDER BY lp.idLinea";
+        // Se renombran para mantener compatibilidad con el JS anterior que usaba idLinea y precioUnitario
+        $sql = "SELECT pd.idDetalle as idLinea, pd.idPedido, pd.idProducto, pd.cantidad, pd.precioVenta as precioUnitario, p.producto 
+                FROM pedidosdetalles pd
+                INNER JOIN productos p ON pd.idProducto = p.idProducto
+                WHERE pd.idPedido=$idPedido
+                ORDER BY pd.idDetalle";
 
         return $this->dao->consultar($sql);
     }
 
-    // =====================================================================
-    // OPERACIONES DE ESCRITURA (INSERT, UPDATE, DELETE) - TRANSACCIONALES
-    // =====================================================================
-
-    /**
-     * Insertar un nuevo pedido con sus líneas de detalle (TRANSACCIONAL)
-     * 
-     * Proceso:
-     * 1. Iniciar transacción
-     * 2. Insertar cabecera del pedido (total = 0 inicialmente)
-     * 3. Insertar cada línea de detalle (calculando subtotales)
-     * 4. Actualizar el total del pedido sumando los subtotales
-     * 5. Confirmar la transacción (o revertir si hay error)
-     * 
-     * @param array $datosPedido  Datos de la cabecera: fecha, idUsuario, estado
-     * @param array $lineas       Array de líneas: [{idProducto, cantidad, precioUnitario}, ...]
-     * @return int|false          ID del nuevo pedido o false si falla
-     */
     public function insertarPedido($datosPedido, $lineas = array()) {
         try {
-            // Paso 1: Iniciar transacción (todo o nada)
             $this->dao->iniciarTransaccion();
 
-            // Paso 2: Preparar y escapar datos de la cabecera
-            $fecha         = $this->dao->getConexion()->real_escape_string($datosPedido['fecha']);
-            $idUsuario     = (int)$datosPedido['idUsuario'];
-            $estado        = $this->dao->getConexion()->real_escape_string($datosPedido['estado']);
-            $observaciones = isset($datosPedido['observaciones'])
-                ? $this->dao->getConexion()->real_escape_string($datosPedido['observaciones'])
-                : '';
+            $fechaPedido      = $this->dao->getConexion()->real_escape_string($datosPedido['fechaPedido']);
+            $fechaAlmacen     = $this->dao->getConexion()->real_escape_string($datosPedido['fechaAlmacen'] ?: '0000-00-00 00:00:00');
+            $fechaEnvio       = $this->dao->getConexion()->real_escape_string($datosPedido['fechaEnvio'] ?: '0000-00-00 00:00:00');
+            $fechaRecibido    = $this->dao->getConexion()->real_escape_string($datosPedido['fechaRecibido'] ?: '0000-00-00 00:00:00');
+            $fechaFinalizado  = $this->dao->getConexion()->real_escape_string($datosPedido['fechaFinalizado'] ?: '0000-00-00 00:00:00');
+            $transporte       = $this->dao->getConexion()->real_escape_string($datosPedido['transporte'] ?: '');
+            $direccion        = $this->dao->getConexion()->real_escape_string($datosPedido['direccion'] ?: '');
+            $idUsuario        = (int)$datosPedido['idUsuario'];
 
-            // Insertar la cabecera con total = 0 (se actualizará después)
-            $sql = "INSERT INTO pedidos (fecha, idUsuario, estado, total, observaciones, activo) 
-                    VALUES ('$fecha', $idUsuario, '$estado', 0.00, '$observaciones', 'S')";
+            $sql = "INSERT INTO pedidos (idUsuario, fechaPedido, fechaAlmacen, fechaEnvio, fechaRecibido, fechaFinalizado, transporte, direccion) 
+                    VALUES ($idUsuario, '$fechaPedido', '$fechaAlmacen', '$fechaEnvio', '$fechaRecibido', '$fechaFinalizado', '$transporte', '$direccion')";
             $idPedido = $this->dao->insertar($sql);
 
             if (!$idPedido) {
                 throw new Exception("Error al insertar la cabecera del pedido");
             }
 
-            // Paso 3: Insertar cada línea de detalle
-            $totalPedido = 0;
             foreach ($lineas as $linea) {
                 $idProducto     = (int)$linea['idProducto'];
                 $cantidad       = (int)$linea['cantidad'];
                 $precioUnitario = (float)$linea['precioUnitario'];
-                $subtotal       = $cantidad * $precioUnitario;
-                $totalPedido   += $subtotal;
 
-                $sqlLinea = "INSERT INTO lineas_pedido (idPedido, idProducto, cantidad, precioUnitario, subtotal) 
-                            VALUES ($idPedido, $idProducto, $cantidad, $precioUnitario, $subtotal)";
+                $sqlLinea = "INSERT INTO pedidosdetalles (idPedido, idProducto, cantidad, precioVenta) 
+                             VALUES ($idPedido, $idProducto, $cantidad, $precioUnitario)";
                 $this->dao->insertar($sqlLinea);
             }
 
-            // Paso 4: Actualizar el total del pedido con la suma de subtotales
-            $sqlTotal = "UPDATE pedidos SET total=$totalPedido WHERE idPedido=$idPedido";
-            $this->dao->actualizar($sqlTotal);
-
-            // Paso 5: Confirmar la transacción (aplicar todos los cambios)
             $this->dao->confirmarTransaccion();
-
             return $idPedido;
 
         } catch (Exception $e) {
-            // Si algo falla, revertir TODOS los cambios
             $this->dao->revertirTransaccion();
             error_log("Error en insertarPedido: " . $e->getMessage());
             return false;
         }
     }
 
-    /**
-     * Actualizar un pedido existente y sus líneas (TRANSACCIONAL)
-     * 
-     * Estrategia: actualizar cabecera, borrar TODAS las líneas antiguas,
-     * insertar las nuevas líneas, y recalcular el total.
-     * 
-     * @param int   $idPedido     ID del pedido a actualizar
-     * @param array $datosPedido  Nuevos datos de la cabecera
-     * @param array $lineas       Nuevas líneas de detalle
-     * @return bool               true si se actualizó correctamente, false si falló
-     */
     public function actualizarPedido($idPedido, $datosPedido, $lineas = array()) {
         try {
-            // Iniciar transacción
             $this->dao->iniciarTransaccion();
 
             $idPedido = (int)$idPedido;
 
-            // Preparar datos de la cabecera
-            $fecha         = $this->dao->getConexion()->real_escape_string($datosPedido['fecha']);
-            $idUsuario     = (int)$datosPedido['idUsuario'];
-            $estado        = $this->dao->getConexion()->real_escape_string($datosPedido['estado']);
-            $observaciones = isset($datosPedido['observaciones'])
-                ? $this->dao->getConexion()->real_escape_string($datosPedido['observaciones'])
-                : '';
+            $fechaPedido      = $this->dao->getConexion()->real_escape_string($datosPedido['fechaPedido']);
+            $fechaAlmacen     = $this->dao->getConexion()->real_escape_string($datosPedido['fechaAlmacen'] ?: '0000-00-00 00:00:00');
+            $fechaEnvio       = $this->dao->getConexion()->real_escape_string($datosPedido['fechaEnvio'] ?: '0000-00-00 00:00:00');
+            $fechaRecibido    = $this->dao->getConexion()->real_escape_string($datosPedido['fechaRecibido'] ?: '0000-00-00 00:00:00');
+            $fechaFinalizado  = $this->dao->getConexion()->real_escape_string($datosPedido['fechaFinalizado'] ?: '0000-00-00 00:00:00');
+            $transporte       = $this->dao->getConexion()->real_escape_string($datosPedido['transporte'] ?: '');
+            $direccion        = $this->dao->getConexion()->real_escape_string($datosPedido['direccion'] ?: '');
+            $idUsuario        = (int)$datosPedido['idUsuario'];
 
-            // Actualizar la cabecera del pedido
             $sql = "UPDATE pedidos 
-                    SET fecha='$fecha', idUsuario=$idUsuario, estado='$estado', observaciones='$observaciones' 
+                    SET idUsuario=$idUsuario, fechaPedido='$fechaPedido', fechaAlmacen='$fechaAlmacen', fechaEnvio='$fechaEnvio', fechaRecibido='$fechaRecibido', fechaFinalizado='$fechaFinalizado', transporte='$transporte', direccion='$direccion'
                     WHERE idPedido=$idPedido";
             $this->dao->actualizar($sql);
 
-            // Borrar TODAS las líneas antiguas del pedido
             $this->borrarLineasPedido($idPedido);
 
-            // Insertar las nuevas líneas y calcular el nuevo total
-            $totalPedido = 0;
             foreach ($lineas as $linea) {
                 $idProducto     = (int)$linea['idProducto'];
                 $cantidad       = (int)$linea['cantidad'];
                 $precioUnitario = (float)$linea['precioUnitario'];
-                $subtotal       = $cantidad * $precioUnitario;
-                $totalPedido   += $subtotal;
 
-                $sqlLinea = "INSERT INTO lineas_pedido (idPedido, idProducto, cantidad, precioUnitario, subtotal) 
-                            VALUES ($idPedido, $idProducto, $cantidad, $precioUnitario, $subtotal)";
+                $sqlLinea = "INSERT INTO pedidosdetalles (idPedido, idProducto, cantidad, precioVenta) 
+                             VALUES ($idPedido, $idProducto, $cantidad, $precioUnitario)";
                 $this->dao->insertar($sqlLinea);
             }
 
-            // Actualizar el total del pedido
-            $sqlTotal = "UPDATE pedidos SET total=$totalPedido WHERE idPedido=$idPedido";
-            $this->dao->actualizar($sqlTotal);
-
-            // Confirmar la transacción
             $this->dao->confirmarTransaccion();
 
             return true;
 
         } catch (Exception $e) {
-            // Revertir si hay error
             $this->dao->revertirTransaccion();
             error_log("Error en actualizarPedido: " . $e->getMessage());
             return false;
         }
     }
 
-    /**
-     * Eliminar un pedido (baja lógica: pone activo='N')
-     * Las líneas de detalle se mantienen intactas.
-     * 
-     * @param int $idPedido  ID del pedido a eliminar
-     * @return int           Número de filas afectadas
-     */
     public function borrarPedido($idPedido) {
         $idPedido = (int)$idPedido;
-        $sql = "UPDATE pedidos SET activo='N' WHERE idPedido=$idPedido";
-        return $this->dao->actualizar($sql);
-    }
-
-    /**
-     * Insertar una línea de detalle individual
-     * Calcula automáticamente el subtotal (cantidad * precioUnitario).
-     * 
-     * @param array $datosLinea  Datos: idPedido, idProducto, cantidad, precioUnitario
-     * @return int               ID de la nueva línea
-     */
-    public function insertarLineaPedido($datosLinea) {
-        $idPedido       = (int)$datosLinea['idPedido'];
-        $idProducto     = (int)$datosLinea['idProducto'];
-        $cantidad       = (int)$datosLinea['cantidad'];
-        $precioUnitario = (float)$datosLinea['precioUnitario'];
-        $subtotal       = $cantidad * $precioUnitario;
-
-        $sql = "INSERT INTO lineas_pedido (idPedido, idProducto, cantidad, precioUnitario, subtotal) 
-                VALUES ($idPedido, $idProducto, $cantidad, $precioUnitario, $subtotal)";
-
-        return $this->dao->insertar($sql);
-    }
-
-    /**
-     * Borrar todas las líneas de detalle de un pedido
-     * Se usa internamente al actualizar un pedido (borrar antiguas + insertar nuevas).
-     * 
-     * @param int $idPedido  ID del pedido
-     * @return int           Número de líneas eliminadas
-     */
-    public function borrarLineasPedido($idPedido) {
-        $idPedido = (int)$idPedido;
-        $sql = "DELETE FROM lineas_pedido WHERE idPedido=$idPedido";
+        // Eliminación física
+        $this->borrarLineasPedido($idPedido);
+        $sql = "DELETE FROM pedidos WHERE idPedido=$idPedido";
         return $this->dao->borrar($sql);
     }
 
-    /**
-     * Recalcular y actualizar el total de un pedido a partir de sus líneas
-     * Útil si se modifican líneas individualmente.
-     * 
-     * @param int $idPedido  ID del pedido
-     * @return float         Total calculado
-     */
-    public function calcularTotalPedido($idPedido) {
+    public function borrarLineasPedido($idPedido) {
         $idPedido = (int)$idPedido;
-
-        // Sumar los subtotales de todas las líneas
-        $sql = "SELECT SUM(subtotal) as total FROM lineas_pedido WHERE idPedido=$idPedido";
-        $resultado = $this->dao->consultar($sql);
-        $total = $resultado[0]['total'] ?? 0;
-
-        // Actualizar el campo total en la cabecera del pedido
-        $sqlUpdate = "UPDATE pedidos SET total=$total WHERE idPedido=$idPedido";
-        $this->dao->actualizar($sqlUpdate);
-
-        return $total;
+        $sql = "DELETE FROM pedidosdetalles WHERE idPedido=$idPedido";
+        return $this->dao->borrar($sql);
     }
 
-    // =====================================================================
-    // DATOS AUXILIARES (para los selects de los formularios)
-    // =====================================================================
-
-    /**
-     * Obtener todos los usuarios activos (para el select de usuario en el formulario)
-     * 
-     * @return array Lista de usuarios con idUsuario, nombre, apellido1
-     */
     public function obtenerUsuarios() {
         $sql = "SELECT idUsuario, nombre, apellido1 FROM usuarios WHERE activo='S' ORDER BY nombre";
         return $this->dao->consultar($sql);
     }
 
-    /**
-     * Obtener usuarios filtrados por nombre/apellido (max 15) para autocompletar
-     * 
-     * @param string $filtro Texto a buscar
-     * @return array Lista de usuarios que coinciden
-     */
     public function obtenerUsuariosFiltrados($filtro) {
         $filtro = $this->dao->getConexion()->real_escape_string($filtro);
         $sql = "SELECT idUsuario, nombre, apellido1 
@@ -376,13 +201,6 @@ class MPedidos {
         return $this->dao->consultar($sql);
     }
 
-    /**
-     * Obtener todos los productos activos (para el select de producto en las líneas)
-     * Devuelve los campos con los nombres originales de la BD para que coincidan
-     * con lo que espera pedidos.js (p.producto, p.precioVenta).
-     * 
-     * @return array Lista de productos con idProducto, producto, precioVenta
-     */
     public function obtenerProductos() {
         $sql = "SELECT idProducto, producto, precioVenta 
                 FROM productos WHERE activo='S' ORDER BY producto";

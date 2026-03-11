@@ -54,13 +54,30 @@ function mostrarFormularioCrearProducto() {
         <label class="form-label">Descripción</label>
         <textarea class="form-control" id="productoDescripcion" name="descripcion" rows="3"></textarea>
       </div>
-      <div class="mb-3">
-        <label class="form-label">Stock</label>
-        <input type="number" class="form-control" id="productoStock" name="stock" value="0">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">ID Categoría</label>
+          <input type="number" class="form-control" id="productoCategoria" name="idCategoria" value="1">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Stock Actual</label>
+          <input type="number" class="form-control" id="productoStock" name="stock" value="0">
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Stock Mínimo</label>
+          <input type="number" class="form-control" id="productoStockMinimo" name="stockMinimo" value="0">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Precio Compra</label>
+          <input type="number" step="0.01" class="form-control" id="productoPrecioCompra" name="precioCompra" value="0">
+        </div>
       </div>
       <div class="mb-3">
-        <label class="form-label">Precio *</label>
+        <label class="form-label">Precio Venta *</label>
         <input type="number" step="0.01" class="form-control" id="productoPrecio" name="precioVenta" required>
+      </div>
       </div>
       <div class="d-grid gap-2">
         <button type="button" class="btn btn-primary" onclick="guardarProducto();">Guardar</button>
@@ -103,12 +120,28 @@ function mostrarFormularioEditarProducto(producto) {
         <label class="form-label">Descripción</label>
         <textarea class="form-control" id="productoDescripcion" rows="3">${producto.descripcion || ""}</textarea>
       </div>
-      <div class="mb-3">
-        <label class="form-label">Stock</label>
-        <input type="number" class="form-control" id="productoStock" value="${producto.stock || 0}">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">ID Categoría</label>
+          <input type="number" class="form-control" id="productoCategoria" value="${producto.idCategoria || 1}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Stock Actual</label>
+          <input type="number" class="form-control" id="productoStock" value="${producto.stock || 0}">
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Stock Mínimo</label>
+          <input type="number" class="form-control" id="productoStockMinimo" value="${producto.stockMinimo || 0}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Precio Compra</label>
+          <input type="number" step="0.01" class="form-control" id="productoPrecioCompra" value="${producto.precioCompra || 0}">
+        </div>
       </div>
       <div class="mb-3">
-        <label class="form-label">Precio *</label>
+        <label class="form-label">Precio Venta *</label>
         <input type="number" step="0.01" class="form-control" id="productoPrecio" value="${producto.precioVenta}" required>
       </div>
       <div class="d-grid gap-2">
@@ -173,7 +206,10 @@ function actualizarProducto() {
     idProducto:  document.getElementById("idProducto").value,
     producto:    document.getElementById("productoNombre").value.trim(),
     descripcion: document.getElementById("productoDescripcion").value.trim(),
+    idCategoria: document.getElementById("productoCategoria").value,
     stock:       document.getElementById("productoStock").value,
+    stockMinimo: document.getElementById("productoStockMinimo").value,
+    precioCompra:document.getElementById("productoPrecioCompra").value,
     precioVenta: document.getElementById("productoPrecio").value
   };
 
