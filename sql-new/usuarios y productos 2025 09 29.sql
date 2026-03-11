@@ -23,6 +23,9 @@ SET time_zone = "+00:00";
 CREATE DATABASE IF NOT EXISTS `db_di25` DEFAULT CHARACTER SET latin1 COLLATE latin1_spanish_ci;
 USE `db_di25`;
 
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS `lineas_pedido`;
+
 -- --------------------------------------------------------
 
 --

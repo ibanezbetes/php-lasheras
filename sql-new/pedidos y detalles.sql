@@ -21,6 +21,9 @@ SET time_zone = "+00:00";
 -- Base de datos: `db_di25`
 --
 
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS `lineas_pedido`;
+
 -- --------------------------------------------------------
 
 --
