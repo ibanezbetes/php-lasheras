@@ -88,22 +88,34 @@ function renderFormularioPedido(pedido = null) {
                     </div>
                     <div class="col-md-4">
                         <label class="form-label text-white">Fecha Almacén</label>
-                        <input type="datetime-local" class="form-control" id="pedidoFechaAlmacen" value="${esEdicion && pedido.fechaAlmacen != '0000-00-00 00:00:00' ? formatDateTime(pedido.fechaAlmacen) : ''}">
+                        <div class="input-group">
+                            <input type="datetime-local" class="form-control" id="pedidoFechaAlmacen" value="${esEdicion && pedido.fechaAlmacen != '0000-00-00 00:00:00' ? formatDateTime(pedido.fechaAlmacen) : ''}">
+                            <button class="btn btn-outline-secondary bg-dark border-secondary" type="button" onclick="document.getElementById('pedidoFechaAlmacen').value=''" title="Borrar fecha">❌</button>
+                        </div>
                     </div>
                 </div>
 
                 <div class="row mb-3">
                     <div class="col-md-4">
                         <label class="form-label text-white">Fecha Envío</label>
-                        <input type="datetime-local" class="form-control" id="pedidoFechaEnvio" value="${esEdicion && pedido.fechaEnvio != '0000-00-00 00:00:00' ? formatDateTime(pedido.fechaEnvio) : ''}">
+                        <div class="input-group">
+                            <input type="datetime-local" class="form-control" id="pedidoFechaEnvio" value="${esEdicion && pedido.fechaEnvio != '0000-00-00 00:00:00' ? formatDateTime(pedido.fechaEnvio) : ''}">
+                            <button class="btn btn-outline-secondary bg-dark border-secondary" type="button" onclick="document.getElementById('pedidoFechaEnvio').value=''" title="Borrar fecha">❌</button>
+                        </div>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label text-white">Fecha Recibido</label>
-                        <input type="datetime-local" class="form-control" id="pedidoFechaRecibido" value="${esEdicion && pedido.fechaRecibido != '0000-00-00 00:00:00' ? formatDateTime(pedido.fechaRecibido) : ''}">
+                        <div class="input-group">
+                            <input type="datetime-local" class="form-control" id="pedidoFechaRecibido" value="${esEdicion && pedido.fechaRecibido != '0000-00-00 00:00:00' ? formatDateTime(pedido.fechaRecibido) : ''}">
+                            <button class="btn btn-outline-secondary bg-dark border-secondary" type="button" onclick="document.getElementById('pedidoFechaRecibido').value=''" title="Borrar fecha">❌</button>
+                        </div>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label text-white">Fecha Finalizado</label>
-                        <input type="datetime-local" class="form-control" id="pedidoFechaFinalizado" value="${esEdicion && pedido.fechaFinalizado != '0000-00-00 00:00:00' ? formatDateTime(pedido.fechaFinalizado) : ''}">
+                        <div class="input-group">
+                            <input type="datetime-local" class="form-control" id="pedidoFechaFinalizado" value="${esEdicion && pedido.fechaFinalizado != '0000-00-00 00:00:00' ? formatDateTime(pedido.fechaFinalizado) : ''}">
+                            <button class="btn btn-outline-secondary bg-dark border-secondary" type="button" onclick="document.getElementById('pedidoFechaFinalizado').value=''" title="Borrar fecha">❌</button>
+                        </div>
                     </div>
                 </div>
 
