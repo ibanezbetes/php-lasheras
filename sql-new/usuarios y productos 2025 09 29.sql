@@ -42,7 +42,8 @@ CREATE TABLE `productos` (
   `precioCompra` decimal(7,2) NOT NULL,
   `precioVenta` decimal(7,2) NOT NULL,
   `stockMinimo` int(7) NOT NULL,
-  `activo` char(1) COLLATE latin1_spanish_ci NOT NULL DEFAULT 'S'
+  `activo` char(1) COLLATE latin1_spanish_ci NOT NULL DEFAULT 'S',
+  PRIMARY KEY (`idProducto`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_spanish_ci;
 
 --
@@ -172,7 +173,8 @@ CREATE TABLE `productos_categorias` (
   `idCategoria` int(11) NOT NULL,
   `categoria` varchar(20) COLLATE latin1_spanish_ci DEFAULT NULL,
   `descripcion` varchar(255) COLLATE latin1_spanish_ci NOT NULL,
-  `activo` char(1) COLLATE latin1_spanish_ci DEFAULT 'S'
+  `activo` char(1) COLLATE latin1_spanish_ci DEFAULT 'S',
+  PRIMARY KEY (`idCategoria`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_spanish_ci;
 
 --
@@ -206,7 +208,9 @@ CREATE TABLE `usuarios` (
   `movil` varchar(15) NOT NULL DEFAULT '',
   `login` varchar(40) CHARACTER SET latin1 COLLATE latin1_spanish_ci NOT NULL,
   `pass` varchar(32) CHARACTER SET latin1 COLLATE latin1_spanish_ci NOT NULL,
-  `activo` char(1) NOT NULL DEFAULT 'N'
+  `activo` char(1) NOT NULL DEFAULT 'N',
+  PRIMARY KEY (`idUsuario`),
+  UNIQUE KEY `login` (`login`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -356,21 +360,17 @@ INSERT INTO `usuarios` (`idUsuario`, `nombre`, `apellido1`, `apellido2`, `sexo`,
 --
 -- Indices de la tabla `productos`
 --
-ALTER TABLE `productos`
-  ADD PRIMARY KEY (`idProducto`);
+
 
 --
 -- Indices de la tabla `productos_categorias`
 --
-ALTER TABLE `productos_categorias`
-  ADD PRIMARY KEY (`idCategoria`);
+
 
 --
 -- Indices de la tabla `usuarios`
 --
-ALTER TABLE `usuarios`
-  ADD PRIMARY KEY (`idUsuario`),
-  ADD UNIQUE KEY `login` (`login`);
+
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
