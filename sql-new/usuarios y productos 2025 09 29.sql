@@ -29,6 +29,7 @@ USE `db_di25`;
 -- Estructura de tabla para la tabla `productos`
 --
 
+DROP TABLE IF EXISTS `productos`;
 CREATE TABLE `productos` (
   `idProducto` int(11) NOT NULL,
   `producto` varchar(100) COLLATE latin1_spanish_ci NOT NULL,
@@ -163,6 +164,7 @@ INSERT INTO `productos` (`idProducto`, `producto`, `descripcion`, `idCategoria`,
 -- Estructura de tabla para la tabla `productos_categorias`
 --
 
+DROP TABLE IF EXISTS `productos_categorias`;
 CREATE TABLE `productos_categorias` (
   `idCategoria` int(11) NOT NULL,
   `categoria` varchar(20) COLLATE latin1_spanish_ci DEFAULT NULL,
@@ -189,6 +191,7 @@ INSERT INTO `productos_categorias` (`idCategoria`, `categoria`, `descripcion`, `
 -- Estructura de tabla para la tabla `usuarios`
 --
 
+DROP TABLE IF EXISTS `usuarios`;
 CREATE TABLE `usuarios` (
   `idUsuario` int(11) UNSIGNED NOT NULL,
   `nombre` varchar(40) CHARACTER SET latin1 COLLATE latin1_spanish_ci NOT NULL,

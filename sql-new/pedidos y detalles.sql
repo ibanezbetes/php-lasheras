@@ -27,6 +27,7 @@ SET time_zone = "+00:00";
 -- Estructura de tabla para la tabla `pedidos`
 --
 
+DROP TABLE IF EXISTS `pedidos`;
 CREATE TABLE `pedidos` (
   `idPedido` int(11) NOT NULL,
   `idUsuario` int(11) NOT NULL,
@@ -378,6 +379,7 @@ INSERT INTO `pedidos` (`idPedido`, `idUsuario`, `fechaPedido`, `fechaAlmacen`, `
 -- Estructura de tabla para la tabla `pedidosdetalles`
 --
 
+DROP TABLE IF EXISTS `pedidosdetalles`;
 CREATE TABLE `pedidosdetalles` (
   `idDetalle` int(11) NOT NULL,
   `idPedido` int(11) NOT NULL,
