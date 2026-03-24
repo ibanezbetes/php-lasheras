@@ -40,7 +40,7 @@
                  <?php else: ?>
                    href="#"
                  <?php endif; ?>>
-                <?php echo htmlspecialchars($menuItem['item']['etiqueta']); ?>
+                <?php echo htmlspecialchars($menuItem['item']['texto']); ?>
               </a>
             </li>
 
@@ -49,7 +49,7 @@
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" role="button" 
                  data-bs-toggle="dropdown" aria-expanded="false">
-                <?php echo htmlspecialchars($menuItem['item']['etiqueta']); ?>
+                <?php echo htmlspecialchars($menuItem['item']['texto']); ?>
               </a>
               <ul class="dropdown-menu">
                 <?php foreach($menuItem['submenus'] as $submenu): ?>
@@ -61,7 +61,7 @@
                        <?php else: ?>
                          href="#"
                        <?php endif; ?>>
-                      <?php echo htmlspecialchars($submenu['etiqueta']); ?>
+                      <?php echo htmlspecialchars($submenu['texto']); ?>
                     </a>
                   </li>
                 <?php endforeach; ?>

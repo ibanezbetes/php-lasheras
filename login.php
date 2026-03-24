@@ -34,6 +34,10 @@ if ($usuario == '' || $pass == '') {
     if ($usuario == 'admin' && $pass == '123') {
         // Login correcto: guardar usuario en sesión y redirigir
         $_SESSION['login'] = $usuario;
+        // Limpiar permisos cacheados para forzar recarga
+        unset($_SESSION['permisos']);
+        unset($_SESSION['opcionesPermitidas']);
+        unset($_SESSION['idUsuario']);
         header('Location: index.php');
         exit();
     } else {

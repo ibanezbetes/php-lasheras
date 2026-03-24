@@ -27,6 +27,23 @@ if (isset($_SESSION['login']) && $_SESSION['login'] != '') {
                        <img src="iconos/logout.png" style="height:2em;" alt="Logout">
                    </a>
                </div>';
+
+    // Cargar permisos del usuario en sesión (si no están ya cargados)
+    if (!isset($_SESSION['permisos'])) {
+        require_once 'modelos/MPermisos.php';
+        require_once 'modelos/MUsuarios.php';
+        $objMPermisos = new MPermisos();
+        $objMUsuarios = new MUsuarios();
+        $datosUsuario = $objMUsuarios->obtenerUsuarioPorLogin($_SESSION['login']);
+        if ($datosUsuario) {
+            $_SESSION['idUsuario'] = $datosUsuario['idUsuario'];
+            $_SESSION['permisos'] = $objMPermisos->getPermisosCombinadosUsuario($datosUsuario['idUsuario']);
+            $_SESSION['opcionesPermitidas'] = $objMPermisos->getOpcionesPermitidasUsuario($datosUsuario['idUsuario']);
+        } else {
+            $_SESSION['permisos'] = array();
+            $_SESSION['opcionesPermitidas'] = array();
+        }
+    }
 } else {
     // No logueado: redirigir al login
     header("Location: login.php");
@@ -95,6 +112,7 @@ if (isset($_SESSION['login']) && $_SESSION['login'] != '') {
         <script src="js/productos.js"></script>    <!-- Lógica del módulo de productos -->
         <script src="js/paginacion.js"></script>   <!-- Soporte de paginación -->
         <script src="js/pedidos.js"></script>      <!-- Lógica del módulo de pedidos -->
+        <script src="js/Permisos.js"></script>      <!-- Lógica del módulo de permisos -->
         <script src="pwa.js"></script>             <!-- Registro del Service Worker -->
     </body>
 </html>

@@ -37,9 +37,11 @@
                     <button type="button" class="btn btn-info ms-2" onclick="verTodosPedidos();">
                         Ver Todos
                     </button>
+                    <?php if(isset($permisosPedidos[2])): ?>
                     <button type="button" class="btn btn-success ms-2" onclick="mostrarFormularioPedido();">
                         Crear Nuevo Pedido
                     </button>
+                    <?php endif; ?>
                 </div>
             </div>
         </form>

@@ -34,10 +34,10 @@ class MMenus {
      * @return array Lista de menús nivel 1 con campos: idOpcion, etiqueta, accion, posicion
      */
     public function obtenerMenusNivel1() {
-        $sql = "SELECT idOpcion, etiqueta, accion, posicion 
+        $sql = "SELECT idOpcion, texto, accion, orden 
                 FROM menus 
                 WHERE idPadre IS NULL AND activo = 'S' 
-                ORDER BY posicion ASC";
+                ORDER BY orden ASC";
         return $this->dao->consultar($sql);
     }
 
@@ -46,14 +46,14 @@ class MMenus {
      * Son las opciones que aparecen en el desplegable de un menú de nivel 1.
      * 
      * @param int $idPadre ID del menú padre del cual obtener los submenús
-     * @return array Lista de submenús con campos: idOpcion, etiqueta, accion, posicion
+     * @return array Lista de submenús con campos: idOpcion, texto, accion, orden
      */
     public function obtenerSubmenus($idPadre) {
         $idPadre = (int)$idPadre;
-        $sql = "SELECT idOpcion, etiqueta, accion, posicion 
+        $sql = "SELECT idOpcion, texto, accion, orden 
                 FROM menus 
                 WHERE idPadre = $idPadre AND activo = 'S' 
-                ORDER BY posicion ASC";
+                ORDER BY orden ASC";
         return $this->dao->consultar($sql);
     }
 }
