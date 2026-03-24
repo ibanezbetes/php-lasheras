@@ -23,16 +23,15 @@ class DAO {
     /** @var mysqli Conexión activa a la base de datos */
     private $conexion;
 
-    /**
-     * Constructor - Establece la conexión con MySQL
-     * Si la conexión falla, detiene la ejecución mostrando el error.
-     */
     public function __construct() {
         $this->conexion = new mysqli(HOST, USER, PASS, DB);
 
         if ($this->conexion->connect_errno) {
             die('Error de conexión: ' . $this->conexion->connect_error);
         }
+
+        // Forzar codificación UTF-8 para evitar errores de JSON con acentos (ñ, á, etc.)
+        $this->conexion->set_charset("utf8");
     }
 
     /**
