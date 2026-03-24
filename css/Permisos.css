@@ -1,0 +1,125 @@
+/* ============================================================
+   Estilos mejorados para el módulo de Permisos
+   Mejora la legibilidad, colores, botones y espaciado
+============================================================ */
+
+/* Títulos y textos principales */
+.titulo-permisos {
+    font-size: 1.5rem;
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: inline-block;
+}
+
+/* Opciones de Menú (cajas) */
+.divOpcionMenu {
+    border-radius: 8px;
+    border: 1px solid #7D9FBB;
+    background-color: #f8fcfd;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    transition: all 0.2s ease;
+}
+
+.divOpcionMenu:hover {
+    border-color: #5b87a8;
+    background-color: #f0f7f9;
+}
+
+/* Cajas de edición */
+.divEdicion {
+    margin: 0.5rem 0;
+    background-color: #ffffff;
+    border-radius: 8px;
+}
+
+.divEdicionInterna {
+    margin: 0.5rem 0 0.5rem 2rem;
+    background-color: #fff;
+    padding: 1.5rem;
+    border: 1px solid #1abc9c;
+    border-left: 4px solid #1abc9c;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.divEdicionRol {
+    margin: 1rem 0;
+    padding: 1.5rem;
+    background-color: #fff;
+    border: 1px solid #3498db;
+    border-left: 4px solid #3498db;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+/* Sub-opciones de menú */
+.subopciones {
+    border: none;
+    margin-left: 3rem;
+    padding-left: 1rem;
+    border-left: 2px dashed #dcdde1;
+}
+
+/* Opciones resaltadas / Roles */
+.roles-resaltados {
+    margin: 1rem 0 1rem 3rem;
+    background-color: #fff8e1;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid #ffeaa7;
+    color: #b38b00;
+}
+
+.roles-resaltados span {
+    color: #d35400;
+}
+
+/* Filtros y formularios */
+.filtro-roles-container {
+    background-color: #f1f2f6;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* Personalización para los iconos de imagen */
+img[title] {
+    transition: transform 0.2s ease, filter 0.2s ease;
+    cursor: pointer;
+}
+
+img[title]:hover {
+    transform: scale(1.15);
+}
+
+/* Textos de menús y permisos */
+.textoMenu {
+    font-weight: 500;
+    color: #2c3e50;
+    font-size: 1.1rem;
+}
+
+.item-permiso {
+    padding: 0.3rem 0.5rem;
+    margin: 0.2rem 0;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.item-permiso:hover {
+    background-color: #e8f4fd;
+}
+
+/* Punteros */
+.icon-action {
+    height: 1.3em;
+    vertical-align: text-bottom;
+}

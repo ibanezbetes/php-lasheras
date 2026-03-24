@@ -17,11 +17,46 @@ class CPedidos extends Controlador {
         $this->modelo = new MPedidos();
     }
 
+    /**
+     * Obtener el idOpcion de Pedidos en la tabla menus
+     * para poder verificar permisos
+     */
+    private function getIdOpcionPedidos() {
+        if (isset($_SESSION['idOpcionPedidos'])) {
+            return $_SESSION['idOpcionPedidos'];
+        }
+        require_once 'modelos/DAO.php';
+        $dao = new DAO();
+        $res = $dao->consultar("SELECT idOpcion FROM menus WHERE texto='Pedidos' AND activo='S' LIMIT 1");
+        $idOpcion = !empty($res) ? $res[0]['idOpcion'] : 0;
+        $_SESSION['idOpcionPedidos'] = $idOpcion;
+        return $idOpcion;
+    }
+
+    /**
+     * Verificar si el usuario logueado tiene un permiso concreto para Pedidos
+     * @param int $numPermiso 1=Consultar, 2=Crear, 3=Modificar, 4=Eliminar
+     * @return bool
+     */
+    private function tienePermisoPedidos($numPermiso) {
+        $idOpcion = $this->getIdOpcionPedidos();
+        return isset($_SESSION['permisos'][$idOpcion][$numPermiso]);
+    }
+
     public function getVistaPedidosPrincipal($datos = array()) {
-        Vista::render('vistas/Pedidos/VPedidosPrincipal.php');
+        // Pasar permisos del usuario para pedidos a la vista
+        $idOpcion = $this->getIdOpcionPedidos();
+        $permisosPedidos = isset($_SESSION['permisos'][$idOpcion]) ? $_SESSION['permisos'][$idOpcion] : array();
+        Vista::render('vistas/Pedidos/VPedidosPrincipal.php', array('permisosPedidos' => $permisosPedidos));
     }
 
     public function getVistaListadoPedidos($datos = array()) {
+        // Verificar permiso de consultar
+        if (!$this->tienePermisoPedidos(1)) {
+            echo '<div class="alert alert-danger">No tienes permiso para consultar pedidos.</div>';
+            return;
+        }
+
         extract($datos);
         $usuario = isset($usuario) ? $usuario : '';
         $fecha   = isset($fecha)   ? $fecha   : '';
@@ -56,12 +91,18 @@ class CPedidos extends Controlador {
                         <td onclick="verDetallesPedido(' . $p['idPedido'] . ');">' . $estado . '</td>
                         <td>
                             <button type="button" class="btn btn-sm btn-info me-1 text-white" 
-                                    title="Ver detalles" onclick="verDetallesPedido(' . $p['idPedido'] . ');">👁️</button>
-                            <button type="button" class="btn btn-sm btn-primary me-1" 
-                                    title="Editar pedido" onclick="editarPedido(' . $p['idPedido'] . ');">✏️</button>
-                            <button type="button" class="btn btn-sm btn-danger" 
-                                    title="Eliminar pedido" onclick="eliminarPedido(' . $p['idPedido'] . ');">❌</button>
-                        </td>
+                                    title="Ver detalles" onclick="verDetallesPedido(' . $p['idPedido'] . ');">👁️</button>';
+                // Botón editar solo si tiene permiso de Modificar (3)
+                if ($this->tienePermisoPedidos(3)) {
+                    echo '<button type="button" class="btn btn-sm btn-primary me-1" 
+                                    title="Editar pedido" onclick="editarPedido(' . $p['idPedido'] . ');">✏️</button>';
+                }
+                // Botón eliminar solo si tiene permiso de Eliminar (4)
+                if ($this->tienePermisoPedidos(4)) {
+                    echo '<button type="button" class="btn btn-sm btn-danger" 
+                                    title="Eliminar pedido" onclick="eliminarPedido(' . $p['idPedido'] . ');">❌</button>';
+                }
+                echo '</td>
                       </tr>';
             }
             echo '</tbody></table></div>';
@@ -98,6 +139,12 @@ class CPedidos extends Controlador {
     }
 
     public function crearPedido($datos = array()) {
+        // Verificar permiso de Crear (2)
+        if (!$this->tienePermisoPedidos(2)) {
+            echo '<div class="alert alert-danger">No tienes permiso para crear pedidos.</div>';
+            return;
+        }
+
         extract($datos);
 
         if (empty($idUsuario) || empty($fechaPedido)) {
@@ -141,6 +188,12 @@ class CPedidos extends Controlador {
     }
 
     public function actualizarPedido($datos = array()) {
+        // Verificar permiso de Modificar (3)
+        if (!$this->tienePermisoPedidos(3)) {
+            echo '<div class="alert alert-danger">No tienes permiso para modificar pedidos.</div>';
+            return;
+        }
+
         extract($datos);
 
         if (empty($idPedido) || empty($idUsuario) || empty($fechaPedido)) {
